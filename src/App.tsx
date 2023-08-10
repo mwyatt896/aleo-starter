@@ -34,7 +34,7 @@ function App() {
     program_id: "priv_pub_m_token_test.aleo",
     type: "unspent",
   });
-  console.log(records[0].plaintext.toString());
+  // console.log(records[0].plaintext.toString());
 
   const {
     execute,
@@ -48,12 +48,12 @@ function App() {
   } = useExecuteProgram({
     programId: "priv_pub_m_token_test.aleo", 
     functionName: operation, 
-    // Aleo program inputs need their types specified, our program takes in 32 bit integers
-    // so the inputs should look like "2i32 3i32"
+    // Use for everything but transfer_public_to_private
     inputs: records[0].plaintext.toString().replace(/\n/g, "").replace(/\s/g, "") + " " + address + " " + amount + "u64",
-    // inputs: address + amount + "u64",
+    // Use for everything but transfer_public_to_private
+    // inputs: address + " " + amount + "u64",
   });
-  console.log(records[0].plaintext.toString().replace(/\n/g, "").replace(/\s/g, "") + " " + address + " " + amount + "u64");
+  
   
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -138,13 +138,16 @@ function App() {
                         value="transfer_private_to_public"
                         >Transfer Private Tokens to a Public Address</option>
                         <option 
-                        value="trasnfer_public_to_private"
+                        value="transfer_public_to_private"
                         >Transfer Public Tokens to a Private Address</option>
                     </select>
                     <input type="submit" />
                     <Typography>Result</Typography>
+                    <Typography> {!transactionId || loading ? "Loading" : transactionId} </Typography>
                     <Typography> {!outputPrivate || loading ? "Loading" : outputPrivate} </Typography>
                     <Typography> {!outputRecords || loading ? "Loading" : outputRecords} </Typography>
+                    <Typography> {!outputPublic || loading ? "Loading" : outputPublic} </Typography>
+                    {/* <Typography> {!outputConstant || loading ? "Loading" : outputConstant} </Typography> */}
                     </Stack>
                   </form>
                 </Container>
