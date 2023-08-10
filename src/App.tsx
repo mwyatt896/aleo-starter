@@ -13,21 +13,28 @@ import {
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import {
   useAccount,
+  useRecords,
   useConnect,
   useExecuteProgram,
   PuzzleWalletProvider,
 } from '@puzzlehq/sdk';
 import { PuzzleWeb3Modal } from '@puzzlehq/sdk';
 import { useState } from 'react';
+import { log } from 'console';
 
 function App() {
   const mdTheme = createTheme();
   const navigate = useNavigate();
   const { connect } = useConnect();
   const { account } = useAccount();
-  const [firstNumber, setFirstNumber] = useState("");
-  const [secondNumber, setSecondNumber] = useState(""); 
+  const [address, setAddress] = useState("");
+  const [amount, setAmount] = useState(""); 
   const [operation, setOperation] = useState(""); 
+  const { records } = useRecords({
+    program_id: "priv_pub_m_token_test.aleo",
+    type: "unspent",
+  });
+  console.log(records[0].plaintext.toString());
 
   const {
     execute,
@@ -39,12 +46,14 @@ function App() {
     outputConstant,
     error,
   } = useExecuteProgram({
-    programId: "puzzlecalculator.aleo", 
+    programId: "priv_pub_m_token_test.aleo", 
     functionName: operation, 
     // Aleo program inputs need their types specified, our program takes in 32 bit integers
     // so the inputs should look like "2i32 3i32"
-    inputs: firstNumber + "i32 " + secondNumber + "i32",
+    inputs: records[0].plaintext.toString().replace(/\n/g, "").replace(/\s/g, "") + " " + address + " " + amount + "u64",
+    // inputs: address + amount + "u64",
   });
+  console.log(records[0].plaintext.toString().replace(/\n/g, "").replace(/\s/g, "") + " " + address + " " + amount + "u64");
   
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -104,37 +113,38 @@ function App() {
                 <Container maxWidth={false} sx={{ mt: 4, mb: 4 }}>
                   <form onSubmit={handleSubmit}>
                     <Stack>
-                    <label>Enter first number 
+                    <label>Enter address 
                       <input
                         type="text"
-                        value={firstNumber}
-                        onChange={(e) => setFirstNumber(e.target.value)}
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
                       />
                     </label>
-                    <label>Enter second number  
+                    <label>Enter amount to transfer to this address 
                       <input
                         type="text"
-                        value={secondNumber}
-                        onChange={(e) => setSecondNumber(e.target.value)}
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
                       />
                     </label>
                     <select name="operation" defaultValue="addition">
                       <option 
-                        value="addition"
-                        >Add</option>
+                        value="transfer_private"
+                        >Transfer Privately</option>
                         <option 
-                        value="subtract"
-                        >Subtract</option>
+                        value="transfer_public"
+                        >Transfer Publicly</option>
                         <option 
-                        value="multiply"
-                        >Multiply</option>
+                        value="transfer_private_to_public"
+                        >Transfer Private Tokens to a Public Address</option>
                         <option 
-                        value="divide"
-                        >Divide</option>
+                        value="trasnfer_public_to_private"
+                        >Transfer Public Tokens to a Private Address</option>
                     </select>
                     <input type="submit" />
                     <Typography>Result</Typography>
-                    <Typography> {!outputPrivate || loading ? "Loading" : outputPrivate.replace("i32", "")} </Typography>
+                    <Typography> {!outputPrivate || loading ? "Loading" : outputPrivate} </Typography>
+                    <Typography> {!outputRecords || loading ? "Loading" : outputRecords} </Typography>
                     </Stack>
                   </form>
                 </Container>
